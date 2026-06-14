@@ -1,0 +1,17 @@
+{
+  "name": "@sigil/bot",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sigil/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "tsx": "^4.22.4"
+  }
+}
