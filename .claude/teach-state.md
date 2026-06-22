@@ -2,7 +2,7 @@
 
 ## Meta
 - date_started: 2026-06-13
-- date_updated: 2026-06-13
+- date_updated: 2026-06-22
 - level: Beginner
 - version: —
 
@@ -15,8 +15,13 @@
 | Status | Task | Sub-steps |
 |--------|------|-----------|
 | 🔄 In progress | 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo | 7 sub-steps |
-| ⬜ Todo | 2. Base de données — Prisma schema, migrations, relations | — |
-| ⬜ Todo | 3. Architecture NestJS — Modules, services, DI, décorateurs | — |
+| ⬜ Todo | 2a. Base de données — Prisma schema, migrations, relations | — |
+| ⬜ Todo | 2b. Base de données avancée — Seeds, transactions, optimisation, index | — |
+| ⬜ Todo | 3a. Architecture NestJS — Modules, services, DI, décorateurs | — |
+| ⬜ Todo | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | — |
+| ⬜ Todo | 3c. REST API design + documentation Swagger/OpenAPI | — |
+| ⬜ Todo | 3d. Authentification JWT — sessions, refresh tokens, guards | — |
+| ⬜ Todo | 3e. WebSockets — Gateway NestJS, temps réel back ↔ front | — |
 | ⬜ Todo | 4. discord.js v14 — Client, événements, slash commands, multi-serveur | — |
 | ⬜ Todo | 5. Module Dés — Algorithme, seuils, embeds, contexte | — |
 | ⬜ Todo | 6. Module Permissions — Guards, rôles Discord, sync automatique | — |
@@ -27,9 +32,24 @@
 | ⬜ Todo | 11. Module Relations & PNJ IA — Anthropic API, contexte persistant | — |
 | ⬜ Todo | 12. Module Vote — Temps réel, seuils adaptatifs, composants Discord | — |
 | ⬜ Todo | 13. Configuration MJ — Personnalité + thème par serveur (Discord + Web) | — |
-| ⬜ Todo | 14. Dashboard Web — React + Vite + Tailwind + Shadcn/ui | — |
-| ⬜ Todo | 15. Tests — Vitest, Jest, mocks discord.js | — |
-| ⬜ Todo | 16. Déploiement Railway — PostgreSQL, env vars, CI/CD | — |
+| ⬜ Todo | 14a. Dashboard React — Fondations (Vite, Tailwind, Shadcn/ui) | — |
+| ⬜ Todo | 14b. Frontend — Routing (TanStack Router, pages, layouts, guards) | — |
+| ⬜ Todo | 14c. Frontend — State management (Zustand) | — |
+| ⬜ Todo | 14d. Frontend — Formulaires & validation (React Hook Form + Zod) | — |
+| ⬜ Todo | 14e. Frontend — Intégration API (TanStack Query) | — |
+| ⬜ Todo | 14f. Frontend — WebSockets côté client | — |
+| ⬜ Todo | S1. Sécurité applicative — OWASP, rate limiting, CORS, sanitization | — |
+| ⬜ Todo | 15a. Tests unitaires — Vitest, Jest, mocks | — |
+| ⬜ Todo | 15b. Tests d'intégration — services NestJS + vraie DB | — |
+| ⬜ Todo | 15c. Tests e2e — Supertest, scénarios complets API | — |
+| ⬜ Todo | D1. DevOps — Variables d'environnement & gestion des secrets | — |
+| ⬜ Todo | D2. DevOps — Docker & docker-compose | — |
+| ⬜ Todo | D3. DevOps — CI/CD (GitHub Actions) | — |
+| ⬜ Todo | D4. DevOps — Monitoring, logs structurés, health checks | — |
+| ⬜ Todo | D5. DevOps — Error tracking (Sentry) | — |
+| ⬜ Todo | 16a. Déploiement Railway — PostgreSQL, env vars, CI/CD | — |
+| ⬜ Todo | 16b. Déploiement — Environnements dev / staging / prod | — |
+| ⬜ Todo | 16c. Déploiement — Migrations en production + zero-downtime | — |
 
 ## Progress
 - current_task: 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo
