@@ -4,7 +4,7 @@
 - date_started: 2026-06-13
 - date_updated: 2026-06-22
 - level: Beginner
-- version: —
+- version: v0.1.0
 
 ## Project
 - name: SIGIL
@@ -14,7 +14,7 @@
 ## KANBAN
 | Status | Task | Sub-steps |
 |--------|------|-----------|
-| 🔄 In progress | 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo | 7 sub-steps |
+| ✅ Done | 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo | 7 sub-steps |
 | ⬜ Todo | 2a. Base de données — Prisma schema, migrations, relations | — |
 | ⬜ Todo | 2b. Base de données avancée — Seeds, transactions, optimisation, index | — |
 | ⬜ Todo | 3a. Architecture NestJS — Modules, services, DI, décorateurs | — |
@@ -52,22 +52,34 @@
 | ⬜ Todo | 16c. Déploiement — Migrations en production + zero-downtime | — |
 
 ## Progress
-- current_task: 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo
-- current_substep: 1.7 — Vérification globale — turbo typecheck
-- substep_index_in_task: 7
+- current_task: 2a. Base de données — Prisma schema, migrations, relations
+- current_substep: —
+- substep_index_in_task: 0
 - attempt_count: 0
 - qa_trigger_counter: 0
 
 ## QA History
 | Date | Task | Code | Security | Best Practices |
 |------|------|------|----------|----------------|
+| 2026-06-22 | 1. Fondations | ⚠️ (6 fixes) | ✅ | ⚠️ (2 fixes) |
 
 ## Recap
 ### Concepts learned
-- (à venir)
+- Monorepo pnpm workspaces : plusieurs packages/apps dans un seul dépôt, dépendances partagées via `workspace:*`
+- Turborepo : orchestration de tâches parallèles, cache basé sur le contenu, pipeline `dependsOn`
+- TypeScript `lib` vs `types` vs `target` : trois curseurs indépendants pour l'environnement JS
+- `@types/node` : les globals Node.js (console, process, Buffer) ne sont pas dans TypeScript par défaut
+- `moduleResolution: bundler` : résolution conçue pour les bundlers, pas pour Node.js natif
+- `noEmit: true` : mode vérification uniquement, ne produit aucun fichier JS
+- `git rm --cached` : désindexer des fichiers déjà commités sans les supprimer du disque
 
 ### Blocking points overcome
-- (à venir)
+- `error TS2584: Cannot find name 'console'` → `@types/node` manquant + `"types": ["node"]` dans tsconfig
+- `error TS6046: Argument for '--target' option` → `ES2025` non supporté comme valeur de `target`, remplacé par `ESNext`
+- `.gitignore` ne désindexe pas les fichiers déjà commités → `git rm -r --cached .turbo/`
 
 ### Good practices applied
-- (à venir)
+- `noEmit: false` explicite dans chaque app pour surcharger la base
+- `include: ["src/**/*"]` déclaré explicitement dans chaque tsconfig
+- `outputs: []` dans Turborepo pour les tâches sans fichiers de sortie
+- `.turbo/` dans `.gitignore` dès le début
