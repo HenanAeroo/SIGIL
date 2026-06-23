@@ -46,10 +46,10 @@ model GuildMember {
   id String @id @default(uuid())
 
   guildId String
-  guild   Guild @relation(fields: [guildId], references: [id])
+  guild   Guild @relation(fields: [guildId], references: [id], onDelete: Cascade)
 
   userId String
-  user   User @relation(fields: [userId], references: [id])
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   joinedAt DateTime @default(now())
 
