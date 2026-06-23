@@ -4,7 +4,7 @@
 - date_started: 2026-06-13
 - date_updated: 2026-06-23
 - level: Beginner
-- version: v0.3.0
+- version: v0.4.0
 
 ## Project
 - name: SIGIL
@@ -17,7 +17,7 @@
 | ✅ Done | 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo | 7 sub-steps |
 | ✅ Done | 2a. Base de données — Prisma schema, migrations, relations | 7 sub-steps |
 | ✅ Done | 2b. Base de données avancée — Seeds, transactions, optimisation, index | 3 sub-steps |
-| ⬜ Todo | 3a. Architecture NestJS — Modules, services, DI, décorateurs | — |
+| ✅ Done | 3a. Architecture NestJS — Modules, services, DI, décorateurs | 4 sub-steps |
 | ⬜ Todo | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | — |
 | ⬜ Todo | 3c. REST API design + documentation Swagger/OpenAPI | — |
 | ⬜ Todo | 3d. Authentification JWT — sessions, refresh tokens, guards | — |
@@ -52,7 +52,7 @@
 | ⬜ Todo | 16c. Déploiement — Migrations en production + zero-downtime | — |
 
 ## Progress
-- current_task: 3a. Architecture NestJS — Modules, services, DI, décorateurs
+- current_task: 3b. NestJS avancé — DTOs, validation, pipes, interceptors
 - current_substep: —
 - substep_index_in_task: 0
 - attempt_count: 0
@@ -64,6 +64,7 @@
 | 2026-06-22 | 1. Fondations | ⚠️ (6 fixes) | ✅ | ⚠️ (2 fixes) |
 | 2026-06-23 | 2a. Base de données | ⚠️ (2 fixes) | ✅ | ⚠️ (1 fix) |
 | 2026-06-23 | 2b. Seeds/Transactions/Index | ⚠️ (4 fixes) | ✅ | ⚠️ (2 fixes) |
+| 2026-06-23 | 3a. Architecture NestJS | ⚠️ (5 fixes) | ✅ | ⚠️ (3 fixes) |
 
 ## Recap
 ### Concepts learned
@@ -75,6 +76,15 @@
 - Nom de contrainte composite Prisma : `@@unique([a, b])` → clé `a_b` dans le `where` de l'upsert
 - `process.exit(1)` : code de sortie non-zéro pour signaler un échec au shell et à la CI
 - Guard `NODE_ENV` : bloquer l'exécution d'un script dangereux en production au niveau du module
+- Module NestJS (`@Module`) : conteneur déclaratif — `imports`, `controllers`, `providers`, `exports`
+- `@Injectable()` : déclare un service injectable dans le conteneur NestJS
+- `@Controller('prefix')` : groupe de routes HTTP, le préfixe définit le chemin de base
+- Injection de dépendances NestJS : déclarer le type dans le constructeur suffit, NestJS instancie et injecte
+- `app.listen()` doit être le dernier appel dans `bootstrap()` — la config (prefix, pipes, CORS) s'applique avant
+- `ValidationPipe` global : active la validation automatique des DTOs sur toutes les routes
+- `setGlobalPrefix('api')` : préfixe toutes les routes sans modifier chaque controller
+- `enableCors()` : restreindre les origines autorisées, utiliser une variable d'environnement
+- `ConfigModule.forRoot({ isGlobal: true })` : rend les variables d'env accessibles partout via DI
 - Prisma schema DSL : `model`, `datasource`, `generator` — trois blocs distincts, un seul fichier de vérité
 - Prisma v7 driver adapter : `PrismaClient` exige un adapter (`PrismaPg`) pour se connecter à PostgreSQL
 - Relations Prisma : `@relation(fields, references)` déclaré des deux côtés, clé étrangère explicite
