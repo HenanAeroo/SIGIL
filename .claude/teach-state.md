@@ -2,9 +2,9 @@
 
 ## Meta
 - date_started: 2026-06-13
-- date_updated: 2026-06-22
+- date_updated: 2026-06-23
 - level: Beginner
-- version: v0.1.0
+- version: v0.3.0
 
 ## Project
 - name: SIGIL
@@ -15,8 +15,8 @@
 | Status | Task | Sub-steps |
 |--------|------|-----------|
 | ✅ Done | 1. Fondations — Monorepo, TypeScript, pnpm, Turborepo | 7 sub-steps |
-| ⬜ Todo | 2a. Base de données — Prisma schema, migrations, relations | — |
-| ⬜ Todo | 2b. Base de données avancée — Seeds, transactions, optimisation, index | — |
+| ✅ Done | 2a. Base de données — Prisma schema, migrations, relations | 7 sub-steps |
+| ✅ Done | 2b. Base de données avancée — Seeds, transactions, optimisation, index | 3 sub-steps |
 | ⬜ Todo | 3a. Architecture NestJS — Modules, services, DI, décorateurs | — |
 | ⬜ Todo | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | — |
 | ⬜ Todo | 3c. REST API design + documentation Swagger/OpenAPI | — |
@@ -52,7 +52,7 @@
 | ⬜ Todo | 16c. Déploiement — Migrations en production + zero-downtime | — |
 
 ## Progress
-- current_task: 2a. Base de données — Prisma schema, migrations, relations
+- current_task: 3a. Architecture NestJS — Modules, services, DI, décorateurs
 - current_substep: —
 - substep_index_in_task: 0
 - attempt_count: 0
@@ -62,9 +62,28 @@
 | Date | Task | Code | Security | Best Practices |
 |------|------|------|----------|----------------|
 | 2026-06-22 | 1. Fondations | ⚠️ (6 fixes) | ✅ | ⚠️ (2 fixes) |
+| 2026-06-23 | 2a. Base de données | ⚠️ (2 fixes) | ✅ | ⚠️ (1 fix) |
+| 2026-06-23 | 2b. Seeds/Transactions/Index | ⚠️ (4 fixes) | ✅ | ⚠️ (2 fixes) |
 
 ## Recap
 ### Concepts learned
+- Transaction Prisma (`$transaction`) : atomicité — tout réussit ou tout est annulé, `tx` remplace `prisma` à l'intérieur
+- `await` sur une promesse async : sans `await`, la transaction est lancée mais pas attendue — exécution désordonnée
+- Index Prisma (`@@index`) : uniquement sur colonnes scalaires, pas sur champs `@relation` (virtuels)
+- `@@unique` composite crée implicitement un index — les index manuels sur les mêmes colonnes sont redondants
+- Seed idempotent avec `upsert` : `where` (clé unique), `create` (si absent), `update: {}` (ignorer si présent)
+- Nom de contrainte composite Prisma : `@@unique([a, b])` → clé `a_b` dans le `where` de l'upsert
+- `process.exit(1)` : code de sortie non-zéro pour signaler un échec au shell et à la CI
+- Guard `NODE_ENV` : bloquer l'exécution d'un script dangereux en production au niveau du module
+- Prisma schema DSL : `model`, `datasource`, `generator` — trois blocs distincts, un seul fichier de vérité
+- Prisma v7 driver adapter : `PrismaClient` exige un adapter (`PrismaPg`) pour se connecter à PostgreSQL
+- Relations Prisma : `@relation(fields, references)` déclaré des deux côtés, clé étrangère explicite
+- `@@map` : nom SQL de la table indépendant du nom Prisma (convention pluriel minuscule)
+- `@@unique([a, b])` : contrainte d'unicité composite sur plusieurs colonnes
+- `onDelete: Cascade` : suppression automatique des enfants quand le parent est supprimé
+- Migration Prisma : `prisma migrate dev` génère + applique le SQL, crée un fichier versionné
+- Singleton pattern : une seule instance `PrismaClient` partagée pour éviter les connexions multiples
+- `prisma.config.ts` (v7) : remplace `url = env()` dans schema.prisma pour la configuration de connexion
 - Monorepo pnpm workspaces : plusieurs packages/apps dans un seul dépôt, dépendances partagées via `workspace:*`
 - Turborepo : orchestration de tâches parallèles, cache basé sur le contenu, pipeline `dependsOn`
 - TypeScript `lib` vs `types` vs `target` : trois curseurs indépendants pour l'environnement JS
@@ -74,6 +93,11 @@
 - `git rm --cached` : désindexer des fichiers déjà commités sans les supprimer du disque
 
 ### Blocking points overcome
+- Prisma v7 — `url` supprimé de `schema.prisma` → déplacé dans `prisma.config.ts` avec `env()`
+- Prisma v7 — `new PrismaClient()` exige un adapter (`PrismaPg`) → `@prisma/adapter-pg` requis
+- Prisma v7 — seed configuré dans `prisma.config.ts` (`migrations.seed`), plus dans `package.json`
+- Docker + Windows — `localhost:5432` inaccessible depuis Prisma CLI → basculé sur Neon.tech
+- PowerShell — `$env:VAR` persiste dans la session et override le `.env` → ouvrir un nouveau terminal
 - `error TS2584: Cannot find name 'console'` → `@types/node` manquant + `"types": ["node"]` dans tsconfig
 - `error TS6046: Argument for '--target' option` → `ES2025` non supporté comme valeur de `target`, remplacé par `ESNext`
 - `.gitignore` ne désindexe pas les fichiers déjà commités → `git rm -r --cached .turbo/`
