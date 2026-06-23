@@ -53,10 +53,10 @@
 
 ## Progress
 - current_task: 3b. NestJS avancé — DTOs, validation, pipes, interceptors
-- current_substep: —
-- substep_index_in_task: 0
+- current_substep: 4 — Interceptors
+- substep_index_in_task: 4
 - attempt_count: 0
-- qa_trigger_counter: 0
+- qa_trigger_counter: 3
 
 ## QA History
 | Date | Task | Code | Security | Best Practices |
@@ -85,6 +85,12 @@
 - `setGlobalPrefix('api')` : préfixe toutes les routes sans modifier chaque controller
 - `enableCors()` : restreindre les origines autorisées, utiliser une variable d'environnement
 - `ConfigModule.forRoot({ isGlobal: true })` : rend les variables d'env accessibles partout via DI
+- DTO (Data Transfer Object) : classe TypeScript qui décrit les données attendues en entrée d'une route
+- `@IsString()` / `@IsNotEmpty()` : décorateurs class-validator, actifs grâce au ValidationPipe global
+- `!` (definite assignment) sur les propriétés DTO : évite l'erreur TypeScript "not initialized"
+- ParseUUIDPipe : valide qu'un paramètre de route est un UUID, retourne 400 sinon
+- `@Param('id')` sans les deux-points : le `:` appartient à la déclaration de route, pas au nom du param
+- Route finale = préfixe global + controller + décorateur (ex: /api + /guilds + @Post() = POST /api/guilds)
 - Prisma schema DSL : `model`, `datasource`, `generator` — trois blocs distincts, un seul fichier de vérité
 - Prisma v7 driver adapter : `PrismaClient` exige un adapter (`PrismaPg`) pour se connecter à PostgreSQL
 - Relations Prisma : `@relation(fields, references)` déclaré des deux côtés, clé étrangère explicite

@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { GuildService } from './guild.service';
 import { CreateGuildDto } from './dto/create-guild.dto';
 
@@ -14,5 +21,10 @@ export class GuildController {
   @Get()
   findAll() {
     return this.guildService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return { id };
   }
 }
