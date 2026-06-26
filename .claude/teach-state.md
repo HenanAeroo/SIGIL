@@ -10,6 +10,7 @@
 - name: SIGIL
 - description: Bot Discord RP multi-serveur — dés, fiches, inventaire, timers, PNJ IA, votes, dashboard MJ React
 - configurability: personnalité bot + thème aventure par serveur, via commande MJ Discord (/sigil config) ET via panel web dashboard
+- formation_goal: projet fullstack pur — back, API, front, devops, infra — formation de A à Z, chaque couche est un objectif pédagogique à part entière
 
 ## KANBAN
 | Status | Task | Sub-steps |
