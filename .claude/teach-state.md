@@ -2,9 +2,9 @@
 
 ## Meta
 - date_started: 2026-06-13
-- date_updated: 2026-06-23
+- date_updated: 2026-08-19
 - level: Beginner
-- version: v0.4.0
+- version: v0.6.1
 
 ## Project
 - name: SIGIL
@@ -19,8 +19,8 @@
 | ✅ Done | 2a. Base de données — Prisma schema, migrations, relations | 7 sub-steps |
 | ✅ Done | 2b. Base de données avancée — Seeds, transactions, optimisation, index | 3 sub-steps |
 | ✅ Done | 3a. Architecture NestJS — Modules, services, DI, décorateurs | 4 sub-steps |
-| ⬜ Todo | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | — |
-| ⬜ Todo | 3c. REST API design + documentation Swagger/OpenAPI | — |
+| ✅ Done | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | 4 sub-steps + closeout QA ✅ (tag v0.6.1) |
+| 🔄 In progress | 3c. REST API design + documentation Swagger/OpenAPI | démarré (~60%) |
 | ⬜ Todo | 3d. Authentification JWT — sessions, refresh tokens, guards | — |
 | ⬜ Todo | 3e. WebSockets — Gateway NestJS, temps réel back ↔ front | — |
 | ⬜ Todo | 4. discord.js v14 — Client, événements, slash commands, multi-serveur | — |
@@ -53,11 +53,12 @@
 | ⬜ Todo | 16c. Déploiement — Migrations en production + zero-downtime | — |
 
 ## Progress
-- current_task: 3b. NestJS avancé — DTOs, validation, pipes, interceptors
-- current_substep: 4 — Interceptors
-- substep_index_in_task: 4
+- current_task: 3c. REST API design + documentation Swagger/OpenAPI
+- current_substep: reprise — finaliser Swagger (~60% déjà fait : DocumentBuilder, @ApiTags/@ApiOperation/@ApiResponse, @ApiProperty)
+- substep_index_in_task: à cadrer à la reprise
 - attempt_count: 0
-- qa_trigger_counter: 3
+- qa_trigger_counter: 0
+- qa_action_items: [x] AI1 | [x] AI2 | [x] AI3 | [x] AI4 transform | [x] AI5 bootstrap catch (tous soldés)
 
 ## QA History
 | Date | Task | Code | Security | Best Practices |
@@ -66,9 +67,22 @@
 | 2026-06-23 | 2a. Base de données | ⚠️ (2 fixes) | ✅ | ⚠️ (1 fix) |
 | 2026-06-23 | 2b. Seeds/Transactions/Index | ⚠️ (4 fixes) | ✅ | ⚠️ (2 fixes) |
 | 2026-06-23 | 3a. Architecture NestJS | ⚠️ (5 fixes) | ✅ | ⚠️ (3 fixes) |
+| 2026-08-19 | 3b. NestJS avancé (closeout) | ✅ (5 fixes) | ✅ | ✅ |
 
 ## Recap
 ### Concepts learned
+- Génériques TS + `NestInterceptor<T, R>` : typer l'enveloppe de réponse (`ResponseEnvelope<T>`) au lieu de `any`
+- Paramètre d'un `map` rxjs = type d'ENTRÉE (brut `T`) ; le corps produit la SORTIE — ne pas confondre les deux
+- `CallHandler.handle()` renvoie `Observable<any>` → `any` épinglé à `T` en annotant `(data: T)` dans le map
+- ESLint `no-unsafe-assignment` plus strict que `tsc` : il traque les `any` que `tsc` laisse passer
+- Controller mince : `findOne` doit DÉLÉGUER au service, la logique métier ne vit pas dans le controller
+- `@Matches(/regex/)` (class-validator) : valider un FORMAT ; `\d` = un chiffre, `{17,19}` = quantifieur, `^…$` = ancres
+- Regex littérale `/\d/` vs string `'\d'` : dans une string JS le `\` est avalé, utiliser `/ /`
+- `@IsNotEmpty` devient redondant si la regex exige déjà ≥1 caractère
+- `ValidationPipe { transform: true }` : instancie le DTO (vraie instance) + coercition de type (query/params)
+- Promesse flottante (`no-floating-promises`) : `void fn()` (intention assumée) vs `fn().catch(...)` (gérer l'échec)
+- `no-unused-expressions` : `err;` seul est un no-op → il faut un vrai appel (`console.error(err)`)
+- Import mort (`no-unused-vars`) : un symbole importé mais non utilisé est refusé par le lint
 - Transaction Prisma (`$transaction`) : atomicité — tout réussit ou tout est annulé, `tx` remplace `prisma` à l'intérieur
 - `await` sur une promesse async : sans `await`, la transaction est lancée mais pas attendue — exécution désordonnée
 - Index Prisma (`@@index`) : uniquement sur colonnes scalaires, pas sur champs `@relation` (virtuels)
@@ -110,6 +124,10 @@
 - `git rm --cached` : désindexer des fichiers déjà commités sans les supprimer du disque
 
 ### Blocking points overcome
+- ESLint `no-unsafe-assignment` sur l'interceptor typé → annoter `(data: T)` dans le `map`
+- Inversion de type : param du `map` typé `ResponseEnvelope<T>` au lieu de `T` → double emballage `{ data: ResponseEnvelope<T> }`
+- Regex à la main : confusion `\d` « numéroté » vs quantifieur `{17,19}`, et string vs regex littérale
+- `no-unused-expressions` : `err;` inerte dans le `.catch` → remplacé par `console.error(err)`
 - Prisma v7 — `url` supprimé de `schema.prisma` → déplacé dans `prisma.config.ts` avec `env()`
 - Prisma v7 — `new PrismaClient()` exige un adapter (`PrismaPg`) → `@prisma/adapter-pg` requis
 - Prisma v7 — seed configuré dans `prisma.config.ts` (`migrations.seed`), plus dans `package.json`
@@ -120,6 +138,9 @@
 - `.gitignore` ne désindexe pas les fichiers déjà commités → `git rm -r --cached .turbo/`
 
 ### Good practices applied
+- Corriger le lint proprement (annotation, vrai appel) plutôt que `// eslint-disable`
+- Vérifier `tsc` + ESLint avant de valider chaque fix, pas seulement « ça a l'air bon »
+- Gérer l'échec du point d'entrée (`bootstrap().catch` + `console.error` + `exit(1)`) au lieu d'une promesse muette
 - `noEmit: false` explicite dans chaque app pour surcharger la base
 - `include: ["src/**/*"]` déclaré explicitement dans chaque tsconfig
 - `outputs: []` dans Turborepo pour les tâches sans fichiers de sortie

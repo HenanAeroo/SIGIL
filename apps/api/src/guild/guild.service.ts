@@ -10,4 +10,8 @@ export class GuildService {
   findAll() {
     return [];
   }
+
+  findOne(id: string) {
+    return { id };
+  }
 }

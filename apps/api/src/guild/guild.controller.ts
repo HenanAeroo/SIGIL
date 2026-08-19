@@ -41,6 +41,6 @@ export class GuildController {
   @ApiResponse({ status: 400, description: 'UUID invalide' })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return { id };
+    return this.guildService.findOne(id);
   }
 }
