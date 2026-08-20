@@ -5,12 +5,15 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { GuildService } from './guild.service.js';
 import { CreateGuildDto } from './dto/create-guild.dto.js';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 
 @ApiTags('guilds')
+@UseGuards(JwtAuthGuard)
 @Controller('guilds')
 export class GuildController {
   constructor(private readonly guildService: GuildService) {}
