@@ -54,16 +54,16 @@
 
 ## Progress
 - current_task: 3c. REST API design + documentation Swagger/OpenAPI
-- current_substep: 3c.1 COMPLÈTE (Prisma DI + ESM + CRUD réel + 404 + Swagger 404). Reste tâche 3c : 3c.2 (Swagger — quasi fait) / 3c.3
-- substep_index_in_task: 1/3 terminé
+- current_substep: 3c.1 COMPLÈTE + QA soldée (#1 409, #5 cleanup) + poussée sur main (ee59c7d). 3c.2 Swagger = fait (doc + tous @ApiResponse). Reste 3c.3 à définir.
+- substep_index_in_task: 3c.1 ✅ / 3c.2 ✅ / 3c.3 à cadrer
 - attempt_count: 0
-- next_action: QA pass sur le travail 3c.1 (gros volume : ESM + DB integration), puis clôture tâche 3c + checklist fin de feature (code-review, sécu, tag version)
+- next_action: décider — clôture tâche 3c (checklist fin de feature 3.5 : /code-review + sécu + tag version v0.6.1→v0.7.0-beta) OU item devops tracké (#2 turbo, #6 .d.ts) OU tâche 3d (auth JWT)
 - qa_trigger_counter: 0
 - audit_3c1: routes existantes (POST/GET/GET :id) idiomatiques ✅ ; Swagger 3c.2 quasi bouclée (setup /api/docs + @ApiOperation/@ApiResponse/@ApiProperty) ; trou identifié = findOne ne renvoie jamais 404 (service en stub)
 - decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
 - microsteps_3c1: [x] 1.dep workspace @sigil/database + install (mécanique, fait 2026-08-20) | [x] 2.PrismaService (expose singleton via `client: typeof prisma = prisma`, tsc OK) | [x] 3.PrismaModule provide+export (classe PrismaModule, tsc OK) | [x] 4.inject dans GuildService (imports:[PrismaModule] + constructeur DI) — DI PROUVÉE au runtime (boot OK, GuildModule initialized, routes mappées) | [x] 5.findOne async findUnique({where:{id}})→ !guild → NotFoundException, sinon return (tsc + runtime OK) | bonus [x] 6.findAll (findMany) + create (guild.create, data:{dto.discordId,dto.serverName}, return guild) réels — tsc OK [x] 7.@ApiResponse 404 Swagger sur findOne — tsc OK ✅ SOUS-ÉTAPE 3c.1 COMPLÈTE
 - detour_ESM: alignement ESM du backend réalisé (blocage ERR_PACKAGE_PATH_NOT_EXPORTED). @sigil/database → build esbuild `dist/index.mjs` (--bundle --format=esm --packages=external) + exports {types:src/index.ts, import:dist/index.mjs}. apps/api → "type":"module" + tous les imports relatifs en `.js` + tsconfig.build.json (déjà présent). Boot vérifié avec DATABASE_URL factice sur port 3999. ⚠️ TODO devops: jest/ts-jest à reconfigurer pour ESM ; pipeline turbo dev doit builder @sigil/database avant l'API.
-- qa_action_items: [x] (3b tous soldés) ; 3c.1 → [x] #1 409 ConflictException (garde `instanceof Error && 'code' in error && code==='P2002'`, + rethrow, + @ApiResponse 409) [ ] #2 turbo build->api [ ] #3 guards+IDOR (3d) [ ] #4 jest ESM [x] #5 findOne cleanup (early-return + renommage guild) [ ] #6 devops: .d.ts bundlés pour @sigil/database (IDE/eslint résolvent les types Prisma → restaurer no-unsafe en error)
+- qa_action_items: [x] (3b tous soldés) ; 3c.1 → [x] #1 409 ConflictException (garde `instanceof Error && 'code' in error && code==='P2002'`, + rethrow, + @ApiResponse 409) [x] #2 turbo: dev dependsOn ^build + script dev API (nest start --watch) — ordre prouvé (db#build avant api#dev) [ ] #3 guards+IDOR (3d) [ ] #4 jest ESM [x] #5 findOne cleanup (early-return + renommage guild) [ ] #6 devops: .d.ts bundlés pour @sigil/database (IDE/eslint résolvent les types Prisma → restaurer no-unsafe en error)
 
 ## QA History
 | Date | Task | Code | Security | Best Practices |
@@ -83,6 +83,9 @@
 - Bundler un package à imports sans extension : esbuild `--bundle --format=esm --packages=external` → un `.mjs` autonome chargeable par Node
 - `"exports"` d'un package : conditions `types` (pour le typecheck, ici `src/index.ts`) vs `import` (pour le runtime, ici `dist/index.mjs`) — peuvent pointer des fichiers différents
 - `tsconfig.build.json` (NestJS) : config de build qui exclut `test`/`**/*spec.ts` de la compilation de production
+- Turborepo `dependsOn: ["^build"]` : le `^` = la tâche `build` des DÉPENDANCES (ordre topologique) ; `build` sans `^` = sa propre tâche. Faire dépendre `dev` de `^build` pour que les deps (bundle `@sigil/database`) soient prêtes avant de lancer l'API
+- Turborepo `persistent: true` (serveur qui ne s'arrête pas) + `cache: false` pour la tâche `dev`
+- Orchestrateur vs feuille : `turbo dev` à la racine = chef d'orchestre qui lance le script `dev` de chaque package ; mettre `turbo dev` DANS le script `dev` d'un package = récursion infinie
 - Le format de module du fichier de TYPES compte : sans `"type":"module"` sur le package, `tsc` (nodenext) lit `src/index.ts` en CJS → l'import par défaut est relié à l'espace de noms (`typeof import(...)`) et non à l'instance → un membre comme `.guild` manque au type-check alors qu'il existe au runtime
 - Pattern 404 appliqué : service `async`, `findUnique({ where: { <clé unique> } })`, `if (!row) throw new NotFoundException(...)`, sinon `return row` — le controller reste inchangé (NestJS attend la promesse)
 - CRUD Prisma dans un service : `findMany()` (liste), `create({ data: { … } })` (insert, retourne la ligne créée avec les champs auto-générés id/createdAt) ; ne passer que les champs non auto-générés dans `data`
