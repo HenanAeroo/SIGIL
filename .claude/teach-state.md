@@ -4,7 +4,7 @@
 - date_started: 2026-06-13
 - date_updated: 2026-08-20
 - level: Beginner
-- version: v0.6.1
+- version: v0.7.0
 
 ## Project
 - name: SIGIL
@@ -20,7 +20,7 @@
 | ✅ Done | 2b. Base de données avancée — Seeds, transactions, optimisation, index | 3 sub-steps |
 | ✅ Done | 3a. Architecture NestJS — Modules, services, DI, décorateurs | 4 sub-steps |
 | ✅ Done | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | 4 sub-steps + closeout QA ✅ (tag v0.6.1) |
-| 🔄 In progress | 3c. REST API design + documentation Swagger/OpenAPI | démarré (~60%) |
+| ✅ Done | 3c. REST API design + documentation Swagger/OpenAPI | 3c.1 + 3c.2 ✅ (tag v0.7.0) |
 | ⬜ Todo | 3d. Authentification JWT — sessions, refresh tokens, guards | — |
 | ⬜ Todo | 3e. WebSockets — Gateway NestJS, temps réel back ↔ front | — |
 | ⬜ Todo | 4. discord.js v14 — Client, événements, slash commands, multi-serveur | — |
@@ -54,10 +54,11 @@
 
 ## Progress
 - current_task: 3c. REST API design + documentation Swagger/OpenAPI
-- current_substep: 3c.1 COMPLÈTE + QA soldée (#1 409, #5 cleanup) + poussée sur main (ee59c7d). 3c.2 Swagger = fait (doc + tous @ApiResponse). Reste 3c.3 à définir.
-- substep_index_in_task: 3c.1 ✅ / 3c.2 ✅ / 3c.3 à cadrer
+- current_task: 3d. Authentification JWT — sessions, refresh tokens, guards (prochaine)
+- current_substep: (à démarrer) — 3c CLÔTURÉE : checklist §3.5 faite (revue + sécu + tag v0.7.0)
 - attempt_count: 0
-- next_action: décider — clôture tâche 3c (checklist fin de feature 3.5 : /code-review + sécu + tag version v0.6.1→v0.7.0-beta) OU item devops tracké (#2 turbo, #6 .d.ts) OU tâche 3d (auth JWT)
+- pending_push: commit d'état + tag v0.7.0 à pousser par l'utilisateur via ! (git push origin main v0.7.0)
+- next_action: démarrer 3d (auth JWT) — règlera aussi QA #3 (guards + IDOR). Rappels sécu S1 : rate limiting (throttler). Dette : #4 jest ESM, #6 .d.ts bundlés
 - qa_trigger_counter: 0
 - audit_3c1: routes existantes (POST/GET/GET :id) idiomatiques ✅ ; Swagger 3c.2 quasi bouclée (setup /api/docs + @ApiOperation/@ApiResponse/@ApiProperty) ; trou identifié = findOne ne renvoie jamais 404 (service en stub)
 - decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
