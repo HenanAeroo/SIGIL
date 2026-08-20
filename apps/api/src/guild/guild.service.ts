@@ -5,12 +5,20 @@ import { PrismaService } from '../prisma/prisma.service.js';
 @Injectable()
 export class GuildService {
   constructor(private readonly prisma: PrismaService) {}
-  create(dto: CreateGuildDto) {
-    return dto;
+  async create(dto: CreateGuildDto) {
+    const guild = await this.prisma.client.guild.create({
+      data: {
+        discordId: dto.discordId,
+        serverName: dto.serverName,
+      },
+    });
+    return guild;
   }
 
-  findAll() {
-    return [];
+  async findAll() {
+    const guilds = await this.prisma.client.guild.findMany();
+
+    return guilds;
   }
 
   async findOne(id: string) {

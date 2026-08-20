@@ -39,6 +39,7 @@ export class GuildController {
   @ApiOperation({ summary: 'Retrouve un serveur discord par son ID' })
   @ApiResponse({ status: 200, description: 'Serveur discord bien retrouvé' })
   @ApiResponse({ status: 400, description: 'UUID invalide' })
+  @ApiResponse({ status: 404, description: 'Aucun serveur trouvé' })
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.guildService.findOne(id);
