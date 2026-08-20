@@ -21,7 +21,7 @@
 | ✅ Done | 3a. Architecture NestJS — Modules, services, DI, décorateurs | 4 sub-steps |
 | ✅ Done | 3b. NestJS avancé — DTOs, validation, pipes, interceptors | 4 sub-steps + closeout QA ✅ (tag v0.6.1) |
 | ✅ Done | 3c. REST API design + documentation Swagger/OpenAPI | 3c.1 + 3c.2 ✅ (tag v0.7.0) |
-| ⬜ Todo | 3d. Authentification JWT — sessions, refresh tokens, guards | — |
+| 🔄 In progress | 3d. Authentification JWT — sessions, refresh tokens, guards | 6 sub-steps |
 | ⬜ Todo | 3e. WebSockets — Gateway NestJS, temps réel back ↔ front | — |
 | ⬜ Todo | 4. discord.js v14 — Client, événements, slash commands, multi-serveur | — |
 | ⬜ Todo | 5. Module Dés — Algorithme, seuils, embeds, contexte | — |
@@ -54,11 +54,17 @@
 
 ## Progress
 - current_task: 3c. REST API design + documentation Swagger/OpenAPI
-- current_task: 3d. Authentification JWT — sessions, refresh tokens, guards (prochaine)
-- current_substep: (à démarrer) — 3c CLÔTURÉE : checklist §3.5 faite (revue + sécu + tag v0.7.0)
+- current_task: 3d. Authentification JWT — sessions, refresh tokens, guards
+- current_substep: 3d.4 — Refresh token (rotation, refreshTokenHash sur User → migration). 3d.3 ✅ COMPLET & PROUVÉ : guard @UseGuards(JwtAuthGuard) sur GuildController, AuthModule exports [JwtModule], GuildModule imports [AuthModule] ; boot OK + test runtime : GET /api/guilds sans token/token bidon → 401. #3 AUTHENTIFICATION réglée (IDOR/autorisation fine = tâche 6). @User retiré de create (YAGNI, choix user) ; décorateur @User conservé pour usage futur. AuthRequest exporté depuis le guard (couplage mineur accepté)
+- pending_push_3d: gros chunk auth NON commité (AuthModule, JwtModule config, dev-login, guard+decorator+types, protection guild, deps @nestjs/jwt+argon2, pnpm-workspace allowBuilds argon2). Bon checkpoint de commit à proposer
+- concepts_3d_acquis: JWT (header.payload.signature, signé pas chiffré), JwtModule.registerAsync useFactory getOrThrow, signAsync payload {sub}, guard CanActivate + extraction Bearer + verifyAsync, typage génériques framework (getRequest<T>/verifyAsync<T>) pour tuer les any
+- tests_decision: rythme convenu — finir dev-login (3d.2) + guard (3d.3), PUIS régler Jest ESM (#4) et écrire les 1ers vrais specs (auth : émission token + guard). Tâches 15a-c = couverture large ensuite
+- substep_index_in_task: 2/5
 - attempt_count: 0
-- pending_push: commit d'état + tag v0.7.0 à pousser par l'utilisateur via ! (git push origin main v0.7.0)
-- next_action: démarrer 3d (auth JWT) — règlera aussi QA #3 (guards + IDOR). Rappels sécu S1 : rate limiting (throttler). Dette : #4 jest ESM, #6 .d.ts bundlés
+- decisions_3d: PIVOT (idée user) — email/password ABANDONNÉ (bot Discord = identité Discord ; User a déjà discordId, pas de champ email/passwordHash). 3d = couche SESSION JWT provider-agnostic. Dev-login TEMPORAIRE par discordId pour apprendre la mécanique ; VRAI Discord OAuth2 branché en TÂCHE 4 (réutilise la même couche JWT). Mécanique = @nestjs/jwt + guards custom (→ Passport plus tard OK). Transport = Bearer → cookies httpOnly en durcissement
+- microsteps_3d (révisé): [x] 3d.1 prérequis (deps @nestjs/jwt+argon2 ; pas de schéma) [ ] 3d.2 JwtModule(secret env)+AuthModule/Service/Controller+dev-login (par discordId)→access token (sign JWT) [ ] 3d.3 guard custom Bearer+@UseGuards+@User→protéger routes guild (#3) [ ] 3d.4 refresh token (rotation, refreshTokenHash→migration) [ ] 3d.5 clôture QA+§3.5+tag
+- pending_push: commit d'état + tag v0.7.0 (3c) à pousser via ! (git push origin main v0.7.0)
+- rappels: S1 rate limiting (throttler) ; dette #4 jest ESM, #6 .d.ts bundlés
 - qa_trigger_counter: 0
 - audit_3c1: routes existantes (POST/GET/GET :id) idiomatiques ✅ ; Swagger 3c.2 quasi bouclée (setup /api/docs + @ApiOperation/@ApiResponse/@ApiProperty) ; trou identifié = findOne ne renvoie jamais 404 (service en stub)
 - decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
