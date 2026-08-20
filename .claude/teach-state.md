@@ -2,7 +2,7 @@
 
 ## Meta
 - date_started: 2026-06-13
-- date_updated: 2026-08-19
+- date_updated: 2026-08-20
 - level: Beginner
 - version: v0.6.1
 
@@ -54,10 +54,15 @@
 
 ## Progress
 - current_task: 3c. REST API design + documentation Swagger/OpenAPI
-- current_substep: reprise — finaliser Swagger (~60% déjà fait : DocumentBuilder, @ApiTags/@ApiOperation/@ApiResponse, @ApiProperty)
-- substep_index_in_task: à cadrer à la reprise
+- current_substep: 3c.1 — Gestion des statuts d'erreur (404) via branchement Prisma réel (PrismaService injectable + DI)
+- substep_index_in_task: 1/3
 - attempt_count: 0
+- next_action: étape 5 — écrire la logique 404 dans GuildService.findOne (async findUnique → null → NotFoundException)
 - qa_trigger_counter: 0
+- audit_3c1: routes existantes (POST/GET/GET :id) idiomatiques ✅ ; Swagger 3c.2 quasi bouclée (setup /api/docs + @ApiOperation/@ApiResponse/@ApiProperty) ; trou identifié = findOne ne renvoie jamais 404 (service en stub)
+- decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
+- microsteps_3c1: [x] 1.dep workspace @sigil/database + install (mécanique, fait 2026-08-20) | [x] 2.PrismaService (expose singleton via `client: typeof prisma = prisma`, tsc OK) | [x] 3.PrismaModule provide+export (classe PrismaModule, tsc OK) | [x] 4.inject dans GuildService (imports:[PrismaModule] + constructeur DI) — DI PROUVÉE au runtime (boot OK, GuildModule initialized, routes mappées) | [x] 5.findOne async findUnique({where:{id}})→ !guild → NotFoundException, sinon return (tsc + runtime OK) | bonus [ ] 6.findAll/create réels [ ] 7.@ApiResponse 404 Swagger
+- detour_ESM: alignement ESM du backend réalisé (blocage ERR_PACKAGE_PATH_NOT_EXPORTED). @sigil/database → build esbuild `dist/index.mjs` (--bundle --format=esm --packages=external) + exports {types:src/index.ts, import:dist/index.mjs}. apps/api → "type":"module" + tous les imports relatifs en `.js` + tsconfig.build.json (déjà présent). Boot vérifié avec DATABASE_URL factice sur port 3999. ⚠️ TODO devops: jest/ts-jest à reconfigurer pour ESM ; pipeline turbo dev doit builder @sigil/database avant l'API.
 - qa_action_items: [x] AI1 | [x] AI2 | [x] AI3 | [x] AI4 transform | [x] AI5 bootstrap catch (tous soldés)
 
 ## QA History
@@ -71,6 +76,19 @@
 
 ## Recap
 ### Concepts learned
+- ESM vs CommonJS : deux systèmes de modules JS — `import`/`import.meta.url` = ESM, `require`/`module.exports` = CJS ; un module CJS ne peut pas `require()` un package ESM-only
+- Client Prisma v7 (générateur `prisma-client`) = ESM-only (`import.meta.url`) → impose d'aligner tout le backend sur ESM
+- ESM natif Node : les imports RELATIFS doivent porter l'extension `.js` (même dans du TS — on pointe le fichier compilé, pas la source)
+- Bundler un package à imports sans extension : esbuild `--bundle --format=esm --packages=external` → un `.mjs` autonome chargeable par Node
+- `"exports"` d'un package : conditions `types` (pour le typecheck, ici `src/index.ts`) vs `import` (pour le runtime, ici `dist/index.mjs`) — peuvent pointer des fichiers différents
+- `tsconfig.build.json` (NestJS) : config de build qui exclut `test`/`**/*spec.ts` de la compilation de production
+- Le format de module du fichier de TYPES compte : sans `"type":"module"` sur le package, `tsc` (nodenext) lit `src/index.ts` en CJS → l'import par défaut est relié à l'espace de noms (`typeof import(...)`) et non à l'instance → un membre comme `.guild` manque au type-check alors qu'il existe au runtime
+- Pattern 404 appliqué : service `async`, `findUnique({ where: { <clé unique> } })`, `if (!row) throw new NotFoundException(...)`, sinon `return row` — le controller reste inchangé (NestJS attend la promesse)
+- Triade d'un module NestJS : `providers` (ce que je fabrique) / `exports` (ce que je prête aux autres) / `imports` (ce que j'emprunte) — un provider non exporté reste privé à son module
+- `PrismaService` : wrapper `@Injectable()` qui EXPOSE le singleton configuré — jamais `new PrismaClient()` (2e pool de connexions)
+- Champ de classe avec initialiseur : `readonly x = valeur` dans le corps, sans constructeur (le constructeur ne sert que pour une valeur venant de l'extérieur / injection)
+- `typeof` a deux vies : position VALEUR (à droite du `=`) = opérateur runtime → string ; position TYPE (après `:`) = extrait le type d'une valeur
+- `TS2742` : un membre `public` dont le type inféré n'est pas nommable/portable (générique Prisma profond `GlobalOmitConfig`) → annotation de type explicite requise ; `typeof laValeur` fournit un type nommable
 - Génériques TS + `NestInterceptor<T, R>` : typer l'enveloppe de réponse (`ResponseEnvelope<T>`) au lieu de `any`
 - Paramètre d'un `map` rxjs = type d'ENTRÉE (brut `T`) ; le corps produit la SORTIE — ne pas confondre les deux
 - `CallHandler.handle()` renvoie `Observable<any>` → `any` épinglé à `T` en annotant `(data: T)` dans le map
@@ -124,6 +142,13 @@
 - `git rm --cached` : désindexer des fichiers déjà commités sans les supprimer du disque
 
 ### Blocking points overcome
+- `ERR_PACKAGE_PATH_NOT_EXPORTED` : API compilée en CJS tentant de charger le package ESM-only `@sigil/database` → aligner l'API sur ESM (`"type":"module"`)
+- Imports relatifs sans extension sous nodenext ESM (erreur TS2835 + échec de résolution Node au runtime) → ajout de `.js` partout
+- Client Prisma généré (imports relatifs sans extension) non chargeable par Node natif → bundlé en `dist/index.mjs` via esbuild
+- Désaccord type↔runtime `Property 'guild' does not exist` : `.guild` OK au runtime (dist `.mjs` ESM) mais absent au typecheck (`src/index.ts` vu en CJS) → `"type":"module"` sur `@sigil/database` + `.js` sur son import relatif de `client`
+- Confusion paramètre de constructeur (= demande d'injection) vs champ de classe (= valeur déjà en main) → champ de classe pour ranger le singleton
+- `typeof prisma` mis en position de VALEUR → rendait la string "object" ; déplacé en position de TYPE pour annoter
+- `TS2742 GlobalOmitConfig ... not portable` sur un membre public → résolu par annotation `client: typeof prisma`
 - ESLint `no-unsafe-assignment` sur l'interceptor typé → annoter `(data: T)` dans le `map`
 - Inversion de type : param du `map` typé `ResponseEnvelope<T>` au lieu de `T` → double emballage `{ data: ResponseEnvelope<T> }`
 - Regex à la main : confusion `\d` « numéroté » vs quantifieur `{17,19}`, et string vs regex littérale
