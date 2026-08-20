@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { GuildModule } from './guild/guild.module';
+import { AppController } from './app.controller.js';
+import { AppService } from './app.service.js';
+import { GuildModule } from './guild/guild.module.js';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({

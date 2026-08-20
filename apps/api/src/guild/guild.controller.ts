@@ -6,8 +6,8 @@ import {
   ParseUUIDPipe,
   Post,
 } from '@nestjs/common';
-import { GuildService } from './guild.service';
-import { CreateGuildDto } from './dto/create-guild.dto';
+import { GuildService } from './guild.service.js';
+import { CreateGuildDto } from './dto/create-guild.dto.js';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('guilds')

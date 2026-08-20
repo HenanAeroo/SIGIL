@@ -1,13 +1,16 @@
 {
   "name": "@sigil/database",
   "private": true,
+  "type": "module",
   "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.mjs",
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
     "studio": "prisma studio"
   },
   "devDependencies": {
+    "esbuild": "^0.25.0",
     "prisma": "^7.8.0",
     "tsx": "^4.22.4"
   },
@@ -19,7 +22,7 @@
   "exports": {
     ".": {
       "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "import": "./dist/index.mjs"
     }
   }
 }

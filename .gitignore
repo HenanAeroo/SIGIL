@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .turbo/
+.claude/scheduled_tasks.lock
 
 .env
 .env.local
