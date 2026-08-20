@@ -54,14 +54,14 @@
 
 ## Progress
 - current_task: 3c. REST API design + documentation Swagger/OpenAPI
-- current_substep: 3c.1 — Gestion des statuts d'erreur (404) via branchement Prisma réel (PrismaService injectable + DI)
-- substep_index_in_task: 1/3
+- current_substep: 3c.1 COMPLÈTE (Prisma DI + ESM + CRUD réel + 404 + Swagger 404). Reste tâche 3c : 3c.2 (Swagger — quasi fait) / 3c.3
+- substep_index_in_task: 1/3 terminé
 - attempt_count: 0
-- next_action: étape 5 — écrire la logique 404 dans GuildService.findOne (async findUnique → null → NotFoundException)
+- next_action: QA pass sur le travail 3c.1 (gros volume : ESM + DB integration), puis clôture tâche 3c + checklist fin de feature (code-review, sécu, tag version)
 - qa_trigger_counter: 0
 - audit_3c1: routes existantes (POST/GET/GET :id) idiomatiques ✅ ; Swagger 3c.2 quasi bouclée (setup /api/docs + @ApiOperation/@ApiResponse/@ApiProperty) ; trou identifié = findOne ne renvoie jamais 404 (service en stub)
 - decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
-- microsteps_3c1: [x] 1.dep workspace @sigil/database + install (mécanique, fait 2026-08-20) | [x] 2.PrismaService (expose singleton via `client: typeof prisma = prisma`, tsc OK) | [x] 3.PrismaModule provide+export (classe PrismaModule, tsc OK) | [x] 4.inject dans GuildService (imports:[PrismaModule] + constructeur DI) — DI PROUVÉE au runtime (boot OK, GuildModule initialized, routes mappées) | [x] 5.findOne async findUnique({where:{id}})→ !guild → NotFoundException, sinon return (tsc + runtime OK) | bonus [ ] 6.findAll/create réels [ ] 7.@ApiResponse 404 Swagger
+- microsteps_3c1: [x] 1.dep workspace @sigil/database + install (mécanique, fait 2026-08-20) | [x] 2.PrismaService (expose singleton via `client: typeof prisma = prisma`, tsc OK) | [x] 3.PrismaModule provide+export (classe PrismaModule, tsc OK) | [x] 4.inject dans GuildService (imports:[PrismaModule] + constructeur DI) — DI PROUVÉE au runtime (boot OK, GuildModule initialized, routes mappées) | [x] 5.findOne async findUnique({where:{id}})→ !guild → NotFoundException, sinon return (tsc + runtime OK) | bonus [x] 6.findAll (findMany) + create (guild.create, data:{dto.discordId,dto.serverName}, return guild) réels — tsc OK [x] 7.@ApiResponse 404 Swagger sur findOne — tsc OK ✅ SOUS-ÉTAPE 3c.1 COMPLÈTE
 - detour_ESM: alignement ESM du backend réalisé (blocage ERR_PACKAGE_PATH_NOT_EXPORTED). @sigil/database → build esbuild `dist/index.mjs` (--bundle --format=esm --packages=external) + exports {types:src/index.ts, import:dist/index.mjs}. apps/api → "type":"module" + tous les imports relatifs en `.js` + tsconfig.build.json (déjà présent). Boot vérifié avec DATABASE_URL factice sur port 3999. ⚠️ TODO devops: jest/ts-jest à reconfigurer pour ESM ; pipeline turbo dev doit builder @sigil/database avant l'API.
 - qa_action_items: [x] AI1 | [x] AI2 | [x] AI3 | [x] AI4 transform | [x] AI5 bootstrap catch (tous soldés)
 
@@ -84,6 +84,8 @@
 - `tsconfig.build.json` (NestJS) : config de build qui exclut `test`/`**/*spec.ts` de la compilation de production
 - Le format de module du fichier de TYPES compte : sans `"type":"module"` sur le package, `tsc` (nodenext) lit `src/index.ts` en CJS → l'import par défaut est relié à l'espace de noms (`typeof import(...)`) et non à l'instance → un membre comme `.guild` manque au type-check alors qu'il existe au runtime
 - Pattern 404 appliqué : service `async`, `findUnique({ where: { <clé unique> } })`, `if (!row) throw new NotFoundException(...)`, sinon `return row` — le controller reste inchangé (NestJS attend la promesse)
+- CRUD Prisma dans un service : `findMany()` (liste), `create({ data: { … } })` (insert, retourne la ligne créée avec les champs auto-générés id/createdAt) ; ne passer que les champs non auto-générés dans `data`
+- TODO design (optionnel) : `discordId` `@unique` → un `create` en doublon lève Prisma `P2002` ; à mapper un jour sur un 409 `ConflictException`
 - Triade d'un module NestJS : `providers` (ce que je fabrique) / `exports` (ce que je prête aux autres) / `imports` (ce que j'emprunte) — un provider non exporté reste privé à son module
 - `PrismaService` : wrapper `@Injectable()` qui EXPOSE le singleton configuré — jamais `new PrismaClient()` (2e pool de connexions)
 - Champ de classe avec initialiseur : `readonly x = valeur` dans le corps, sans constructeur (le constructeur ne sert que pour une valeur venant de l'extérieur / injection)
