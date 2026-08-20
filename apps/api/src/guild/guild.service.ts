@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateGuildDto } from './dto/create-guild.dto.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -6,13 +10,20 @@ import { PrismaService } from '../prisma/prisma.service.js';
 export class GuildService {
   constructor(private readonly prisma: PrismaService) {}
   async create(dto: CreateGuildDto) {
-    const guild = await this.prisma.client.guild.create({
-      data: {
-        discordId: dto.discordId,
-        serverName: dto.serverName,
-      },
-    });
-    return guild;
+    try {
+      const guild = await this.prisma.client.guild.create({
+        data: {
+          discordId: dto.discordId,
+          serverName: dto.serverName,
+        },
+      });
+      return guild;
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && error.code === 'P2002') {
+        throw new ConflictException('Ce serveur existe déjà');
+      }
+      throw error;
+    }
   }
 
   async findAll() {
@@ -22,14 +33,14 @@ export class GuildService {
   }
 
   async findOne(id: string) {
-    const guildId = await this.prisma.client.guild.findUnique({
+    const guild = await this.prisma.client.guild.findUnique({
       where: { id },
     });
 
-    if (!guildId) {
+    if (!guild) {
       throw new NotFoundException('Aucun serveur trouvé');
-    } else {
-      return guildId;
     }
+
+    return guild;
   }
 }

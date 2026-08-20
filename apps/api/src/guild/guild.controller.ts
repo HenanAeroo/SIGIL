@@ -24,6 +24,7 @@ export class GuildController {
     status: 400,
     description: 'Body invalide ou champs manquants',
   })
+  @ApiResponse({ status: 409, description: 'Serveur déjà enregistré' })
   @Post()
   create(@Body() dto: CreateGuildDto) {
     return this.guildService.create(dto);
