@@ -63,7 +63,7 @@
 - decision: approche B (PrismaService @Injectable + PrismaModule exporté, DI) plutôt qu'import direct du singleton
 - microsteps_3c1: [x] 1.dep workspace @sigil/database + install (mécanique, fait 2026-08-20) | [x] 2.PrismaService (expose singleton via `client: typeof prisma = prisma`, tsc OK) | [x] 3.PrismaModule provide+export (classe PrismaModule, tsc OK) | [x] 4.inject dans GuildService (imports:[PrismaModule] + constructeur DI) — DI PROUVÉE au runtime (boot OK, GuildModule initialized, routes mappées) | [x] 5.findOne async findUnique({where:{id}})→ !guild → NotFoundException, sinon return (tsc + runtime OK) | bonus [x] 6.findAll (findMany) + create (guild.create, data:{dto.discordId,dto.serverName}, return guild) réels — tsc OK [x] 7.@ApiResponse 404 Swagger sur findOne — tsc OK ✅ SOUS-ÉTAPE 3c.1 COMPLÈTE
 - detour_ESM: alignement ESM du backend réalisé (blocage ERR_PACKAGE_PATH_NOT_EXPORTED). @sigil/database → build esbuild `dist/index.mjs` (--bundle --format=esm --packages=external) + exports {types:src/index.ts, import:dist/index.mjs}. apps/api → "type":"module" + tous les imports relatifs en `.js` + tsconfig.build.json (déjà présent). Boot vérifié avec DATABASE_URL factice sur port 3999. ⚠️ TODO devops: jest/ts-jest à reconfigurer pour ESM ; pipeline turbo dev doit builder @sigil/database avant l'API.
-- qa_action_items: [x] AI1 | [x] AI2 | [x] AI3 | [x] AI4 transform | [x] AI5 bootstrap catch (tous soldés)
+- qa_action_items: [x] (3b tous soldés) ; 3c.1 → [x] #1 409 ConflictException (garde `instanceof Error && 'code' in error && code==='P2002'`, + rethrow, + @ApiResponse 409) [ ] #2 turbo build->api [ ] #3 guards+IDOR (3d) [ ] #4 jest ESM [x] #5 findOne cleanup (early-return + renommage guild) [ ] #6 devops: .d.ts bundlés pour @sigil/database (IDE/eslint résolvent les types Prisma → restaurer no-unsafe en error)
 
 ## QA History
 | Date | Task | Code | Security | Best Practices |
@@ -73,6 +73,7 @@
 | 2026-06-23 | 2b. Seeds/Transactions/Index | ⚠️ (4 fixes) | ✅ | ⚠️ (2 fixes) |
 | 2026-06-23 | 3a. Architecture NestJS | ⚠️ (5 fixes) | ✅ | ⚠️ (3 fixes) |
 | 2026-08-19 | 3b. NestJS avancé (closeout) | ✅ (5 fixes) | ✅ | ✅ |
+| 2026-08-20 | 3c.1 (Prisma DI + ESM + CRUD + 404) | ⚠️ (#1 409, #5 cleanup) | ⚠️ (#3 auth/IDOR à venir 3d) | ⚠️ (#2 turbo, #4 jest ESM) |
 
 ## Recap
 ### Concepts learned
@@ -85,7 +86,9 @@
 - Le format de module du fichier de TYPES compte : sans `"type":"module"` sur le package, `tsc` (nodenext) lit `src/index.ts` en CJS → l'import par défaut est relié à l'espace de noms (`typeof import(...)`) et non à l'instance → un membre comme `.guild` manque au type-check alors qu'il existe au runtime
 - Pattern 404 appliqué : service `async`, `findUnique({ where: { <clé unique> } })`, `if (!row) throw new NotFoundException(...)`, sinon `return row` — le controller reste inchangé (NestJS attend la promesse)
 - CRUD Prisma dans un service : `findMany()` (liste), `create({ data: { … } })` (insert, retourne la ligne créée avec les champs auto-générés id/createdAt) ; ne passer que les champs non auto-générés dans `data`
-- TODO design (optionnel) : `discordId` `@unique` → un `create` en doublon lève Prisma `P2002` ; à mapper un jour sur un 409 `ConflictException`
+- 409 `ConflictException` : bon statut pour « existe déjà » (violation `@unique` / Prisma `P2002`) — try/catch autour du `create`, rethrow des erreurs non gérées (ne jamais avaler)
+- Narrowing d'erreur SANS dépendre du type Prisma : `error instanceof Error && 'code' in error && error.code === 'P2002'` — `Error` est global (toujours résolu), `in` ajoute la prop, `.code` est `unknown` (sûr) ; plus portable que `Prisma.PrismaClientKnownRequestError`
+- Désaccord `tsc` (build) vs serveur TS de l'IDE / typescript-eslint : le build `tsc -p` tire la source brute du package workspace dans son programme et résout ; le language server assigne cette source à SON projet (résolution différente) → types Prisma dégradés en any/error → faux positifs `no-unsafe` et « error is unknown ». Fix propre : livrer des `.d.ts` (idéalement bundlés) pour le package
 - Triade d'un module NestJS : `providers` (ce que je fabrique) / `exports` (ce que je prête aux autres) / `imports` (ce que j'emprunte) — un provider non exporté reste privé à son module
 - `PrismaService` : wrapper `@Injectable()` qui EXPOSE le singleton configuré — jamais `new PrismaClient()` (2e pool de connexions)
 - Champ de classe avec initialiseur : `readonly x = valeur` dans le corps, sans constructeur (le constructeur ne sert que pour une valeur venant de l'extérieur / injection)
